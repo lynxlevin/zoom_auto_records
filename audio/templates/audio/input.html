@@ -8,10 +8,11 @@
         <script src=""></script>
     </head>
     <body>
-        <form action="">
+        <form action="{% url 'audio:submit' %}" method="post">
+            {% csrf_token %}
             <label>
                 Zoom会議のミーティングID
-                <input type="text">
+                <input type="text" name="meeting_id">
             </label>
             <input type="submit" value="send">
         </form>
