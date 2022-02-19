@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import hmac
+import time
 from django.http import HttpResponse
 from django.shortcuts import render
 import http.client
@@ -14,12 +18,31 @@ def submit(request):
 
 
 def get_zoom_meeting(meeting_id):
+    token = generate_jwt_token()
     conn = http.client.HTTPSConnection("api.zoom.us")
+
     headers = {
-        'authorization': "Bearer JWT",
+        'authorization': "Bearer" + token,
         'content-type': "application/json"
     }
     conn.request("GET", "/v2/meetings/%s" % meeting_id,  headers=headers)
     res = conn.getresponse()
     data = res.read()
     return data.decode("utf-8")
+
+
+def generate_jwt_token():
+    API_KEY = 'api_key'
+    API_SECRET = 'api_secret'
+    expiration = int(time.time()) + 5
+
+    header = base64.urlsafe_b64encode(
+        '{"alg": "HS256", "typ": "JWT"}'.encode()).replace(b'=', b'')
+    payload = base64.urlsafe_b64encode(
+        ('{"iss": "'+API_KEY+'", "exp": "'+str(expiration)+'"}').encode()).replace(b'=', b'')
+
+    hashdata = hmac.new(API_SECRET.encode(), header +
+                        ".".encode()+payload, hashlib.sha256)
+    signature = base64.urlsafe_b64encode(hashdata.digest()).replace(b'=', b'')
+    token = (header+".".encode()+payload+".".encode()+signature).decode()
+    return token
