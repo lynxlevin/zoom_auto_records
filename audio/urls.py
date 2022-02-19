@@ -6,5 +6,4 @@ app_name = 'audio'
 urlpatterns = [
     path('input/', views.input, name='input'),
     path('submit/', views.submit, name='submit'),
-    path('record/<params>', views.record, name="record"),
 ]
