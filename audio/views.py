@@ -3,4 +3,4 @@ from django.shortcuts import render
 
 
 def input(request):
-    return HttpResponse("Hello World")
+    return render(request, 'audio/input.html')
