@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import time
+import environ
 from django.http import HttpResponse
 from django.shortcuts import render
 import http.client
@@ -32,8 +33,11 @@ def get_zoom_meeting(meeting_id):
 
 
 def generate_jwt_token():
-    API_KEY = 'api_key'
-    API_SECRET = 'api_secret'
+    env = environ.Env()
+    env.read_env('.env')
+
+    API_KEY = env('ZOOM_API_KEY')
+    API_SECRET = env('ZOOM_API_SECRET')
     expiration = int(time.time()) + 5
 
     header = base64.urlsafe_b64encode(
