@@ -1,6 +1,4 @@
-import base64
-import hashlib
-import hmac
+import jwt
 import time
 import environ
 from django.http import HttpResponse
@@ -39,14 +37,7 @@ def generate_jwt_token():
     API_KEY = env('ZOOM_API_KEY')
     API_SECRET = env('ZOOM_API_SECRET')
     expiration = int(time.time()) + 5
+    payload = {'iss': API_KEY, 'exp': expiration}
 
-    header = base64.urlsafe_b64encode(
-        '{"alg": "HS256", "typ": "JWT"}'.encode()).replace(b'=', b'')
-    payload = base64.urlsafe_b64encode(
-        ('{"iss": "'+API_KEY+'", "exp": "'+str(expiration)+'"}').encode()).replace(b'=', b'')
-
-    hashdata = hmac.new(API_SECRET.encode(), header +
-                        ".".encode()+payload, hashlib.sha256)
-    signature = base64.urlsafe_b64encode(hashdata.digest()).replace(b'=', b'')
-    token = (header+".".encode()+payload+".".encode()+signature).decode()
+    token = jwt.encode(payload, API_SECRET, algorithm='HS256')
     return token
