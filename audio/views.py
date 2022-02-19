@@ -1,6 +1,7 @@
 import jwt
 import time
 import environ
+import json
 from django.http import HttpResponse
 from django.shortcuts import render
 import http.client
@@ -13,7 +14,7 @@ def input(request):
 def submit(request):
     meeting_id = request.POST['meeting_id']
     meeting = get_zoom_meeting(meeting_id)
-    return HttpResponse("Your meeting is %s" % meeting)
+    return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda']})
 
 
 def get_zoom_meeting(meeting_id):
@@ -25,9 +26,9 @@ def get_zoom_meeting(meeting_id):
         'content-type': "application/json"
     }
     conn.request("GET", "/v2/meetings/%s" % meeting_id,  headers=headers)
-    res = conn.getresponse()
-    data = res.read()
-    return data.decode("utf-8")
+    response = conn.getresponse()
+    data = response.read()
+    return json.loads(data)
 
 
 def generate_jwt_token():
