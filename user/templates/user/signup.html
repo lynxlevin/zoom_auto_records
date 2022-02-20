@@ -1,20 +1,15 @@
 {% extends 'audio/base.html' %}
 {% block content %}
 <div>
-    <form action="">
+    <form method="POST">
         {% csrf_token %}
-        <label>
-            メールアドレス
-            <input type="email" name="email">
-        </label>
-        <label>
-            パスワード
-            <input type="password" name="password">
-        </label>
-        <label>
-            パスワード（確認用）
-            <input type="password" name="password_confirmation">
-        </label>
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            {{ field.label }}
+            {{ field }}
+            {{ field.errors }}
+            <br>
+        {% endfor %}
         <input type="submit" value="sign up">
     </form>
 </div>
