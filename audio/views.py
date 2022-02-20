@@ -1,18 +1,10 @@
 import os
 
-from django.http import HttpRequest, HttpResponse
-
+from django.http import HttpResponse
+from django.shortcuts import render
 from audio.forms import AudioFileForm
 from audio.models import AudioFile
-import jwt
-import time
-import environ
-import json
-from django.shortcuts import render
-import http.client
-import speech_recognition as sr
-from pydub import AudioSegment
-from django.core.files.storage import FileSystemStorage
+from audio.domain_logic import recognize_speech, convert_m4a_to_flac, access_zoom_api
 
 
 def input(request):
@@ -21,75 +13,44 @@ def input(request):
 
 def submit(request):
     meeting_id = request.POST['meeting_id']
-    meeting = get_zoom_meeting(meeting_id)
+    get_meeting = {
+        "method": 'GET',
+        "uri": '/v2/meetings/' + meeting_id,
+    }
+    meeting = access_zoom_api(get_meeting)
 
     form = AudioFileForm(request.POST, request.FILES)
     if form.is_valid():
-        instance = AudioFile(file=request.FILES['file'])
-        instance.save()
+        file_instance = AudioFile(file=request.FILES['file'])
+        file_instance.save()
     else:
         return HttpResponse("fail %s" % form.errors['file'])
 
-    file_path = instance.file.path
+    record = get_record_from_file(file_instance)
 
-    convert_m4a_to_flac(file_path)
-    record = recognize_speech()
-
-    delete_tmp_file()
-    delete_uploaded_file(instance)
+    delete_uploaded_file_and_instance(file_instance)
 
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
 
-def get_zoom_meeting(meeting_id):
-    token = generate_jwt_token()
-    conn = http.client.HTTPSConnection("api.zoom.us")
+def get_record_from_file(file_instance):
+    file_path = file_instance.file.path
+    converted_file_path = 'audio/tmp/converted.flac'
 
-    headers = {
-        'authorization': "Bearer" + token,
-        'content-type': "application/json"
-    }
-    conn.request("GET", "/v2/meetings/%s" % meeting_id,  headers=headers)
-    response = conn.getresponse()
-    data = response.read()
-    return json.loads(data)
+    convert_m4a_to_flac(file_path, converted_file_path)
+    record = recognize_speech(converted_file_path, 'ja-JP')
 
+    delete_file(converted_file_path)
 
-def generate_jwt_token():
-    env = environ.Env()
-    env.read_env('.env')
-
-    API_KEY = env('ZOOM_API_KEY')
-    API_SECRET = env('ZOOM_API_SECRET')
-    expiration = int(time.time()) + 5
-    payload = {'iss': API_KEY, 'exp': expiration}
-
-    token = jwt.encode(payload, API_SECRET, algorithm='HS256')
-    return token
-
-
-def convert_m4a_to_flac(file_path):
-    voice = AudioSegment.from_file(file_path, "m4a")
-    voice.export("audio/tmp/converted.flac", format="flac")
-
-
-def recognize_speech():
-    r = sr.Recognizer()
-    audio_file = sr.AudioFile('audio/tmp/converted.flac')
-    with audio_file as source:
-        audio = r.record(source)
-    record = r.recognize_google(audio, language='ja-JP')
     return record
 
 
-def delete_tmp_file():
-    converted = 'audio/tmp/converted.flac'
-    if os.path.isfile(converted):
-        os.remove(converted)
+def delete_file(file_path):
+    if os.path.isfile(file_path):
+        os.remove(file_path)
 
 
-def delete_uploaded_file(file_instance):
+def delete_uploaded_file_and_instance(file_instance):
     path = file_instance.file.path
-    if os.path.isfile(path):
-        os.remove(path)
-        file_instance.delete()
+    delete_file(path)
+    file_instance.delete()
