@@ -1,38 +1,29 @@
-<!DOCTYPE html>
-<html lang="ja">
-    <head>
-        <title>Zoom Auto Records</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <script src=""></script>
-    </head>
-    <body>
-        <ul>
-            <li>
-                UUID: {{ uuid }}
-            </li>
-            <li>
-                topic: {{ topic }}
-            </li>
-            <li>
-                start_time: {{ start_time }}
-            </li>
-            <li>
-                end_time: {{ end_time }}
-            </li>
-            <li>
-                total_minutes: {{ total_minutes }}
-            </li>
-            <li>
-                participants_count: {{ participants_count }}
-            </li>
-            <li>
-                議事録：
-            </li>
-        </ul>
-        <div>
-            {{ record }}
-        </div>
-    </body>
-</html>
+{% extends 'audio/base.html' %}
+{% block content %}
+<ul>
+    <li>
+        UUID: {{ uuid }}
+    </li>
+    <li>
+        topic: {{ topic }}
+    </li>
+    <li>
+        start_time: {{ start_time }}
+    </li>
+    <li>
+        end_time: {{ end_time }}
+    </li>
+    <li>
+        total_minutes: {{ total_minutes }}
+    </li>
+    <li>
+        participants_count: {{ participants_count }}
+    </li>
+    <li>
+        議事録：
+    </li>
+</ul>
+<div>
+    {{ record }}
+</div>
+{% endblock %}

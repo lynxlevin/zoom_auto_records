@@ -1,31 +1,22 @@
-<!DOCTYPE html>
-<html lang="ja">
-    <head>
-        <title>Zoom Auto Records</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <script src=""></script>
-    </head>
-    <body>
-        <form action="{% url 'audio:submit' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            どのZoom会議？
-            {% if past_meetings %}
-            <ul>
-                {% for meeting in past_meetings %}
-                <li>
-                    <input type="radio" name="meeting_uuid" id="meeting{{ forloop.counter }}" value="{{ meeting.uuid }}" />
-                    <label for="meeting{{ forloop.counter }}">{{ meeting }}</label>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            <label>
-                Zoomの音声録音(m4a形式)
-                <input type="file" name="file">
-            </label>
-            <input type="submit" value="send">
-        </form>
-    </body>
-</html>
+{% extends 'audio/base.html' %}
+{% block content %}
+<form action="{% url 'audio:submit' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    どのZoom会議？
+    {% if past_meetings %}
+    <ul>
+        {% for meeting in past_meetings %}
+        <li>
+            <input type="radio" name="meeting_uuid" id="meeting{{ forloop.counter }}" value="{{ meeting.uuid }}" />
+            <label for="meeting{{ forloop.counter }}">{{ meeting }}</label>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <label>
+        Zoomの音声録音(m4a形式)
+        <input type="file" name="file">
+    </label>
+    <input type="submit" value="send">
+</form>
+{% endblock %}
