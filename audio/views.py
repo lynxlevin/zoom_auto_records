@@ -36,6 +36,7 @@ def submit(request):
     record = recognize_speech()
 
     delete_tmp_file()
+    delete_uploaded_file(instance)
 
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
@@ -85,3 +86,10 @@ def delete_tmp_file():
     converted = 'audio/tmp/converted.flac'
     if os.path.isfile(converted):
         os.remove(converted)
+
+
+def delete_uploaded_file(file_instance):
+    path = file_instance.file.path
+    if os.path.isfile(path):
+        os.remove(path)
+        file_instance.delete()
