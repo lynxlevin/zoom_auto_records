@@ -48,17 +48,15 @@ def generate_jwt_token():
     return token
 
 
+def convert_m4a_to_flac():
+    voice = AudioSegment.from_file("audio/assets/audio_only.m4a", "m4a")
+    voice.export("audio/assets/converted.flac", format="flac")
+
+
 def recognize_speech():
     r = sr.Recognizer()
     audio_file = sr.AudioFile('audio/assets/converted.flac')
     with audio_file as source:
         audio = r.record(source)
-    record = r.recognize_google(audio)
+    record = r.recognize_google(audio, language='ja-JP')
     return record
-
-
-def convert_m4a_to_flac():
-    # voice = AudioSegment.from_file(
-    #     "audio/assets/audio_files_harvard.wav", "wav")
-    voice = AudioSegment.from_file("audio/assets/audio_only.m4a", "m4a")
-    voice.export("audio/assets/converted.flac", format="flac")
