@@ -1,7 +1,9 @@
-from email.mime import audio
 import os
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
+
+from audio.forms import AudioFileForm
+from audio.models import AudioFile
 import jwt
 import time
 import environ
@@ -20,12 +22,21 @@ def input(request):
 def submit(request):
     meeting_id = request.POST['meeting_id']
     meeting = get_zoom_meeting(meeting_id)
-    file = request.FILES['file']
-    fs = FileSystemStorage()
-    filename = fs.save("audio/tmp/%s" % file.name, file)
-    convert_m4a_to_flac(filename)
+
+    form = AudioFileForm(request.POST, request.FILES)
+    if form.is_valid():
+        instance = AudioFile(file=request.FILES['file'])
+        instance.save()
+    else:
+        return HttpResponse("fail %s" % form.errors['file'])
+
+    file_path = instance.file.path
+
+    convert_m4a_to_flac(file_path)
     record = recognize_speech()
-    delete_tmp_files(filename)
+
+    delete_tmp_file()
+
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
 
@@ -56,8 +67,8 @@ def generate_jwt_token():
     return token
 
 
-def convert_m4a_to_flac(filename):
-    voice = AudioSegment.from_file(filename, "m4a")
+def convert_m4a_to_flac(file_path):
+    voice = AudioSegment.from_file(file_path, "m4a")
     voice.export("audio/tmp/converted.flac", format="flac")
 
 
@@ -70,9 +81,7 @@ def recognize_speech():
     return record
 
 
-def delete_tmp_files(filename):
+def delete_tmp_file():
     converted = 'audio/tmp/converted.flac'
     if os.path.isfile(converted):
         os.remove(converted)
-    if os.path.isfile(filename):
-        os.remove(filename)

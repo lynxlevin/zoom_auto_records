@@ -1,4 +1,5 @@
 __pycache__/
-db.sqlite3
+db.zoom_auto_records_sqlite3
 .env
+media/*
 audio/tmp/*
