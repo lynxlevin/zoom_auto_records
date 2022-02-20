@@ -1,4 +1,5 @@
 from email.mime import audio
+import os
 import jwt
 import time
 import environ
@@ -18,6 +19,7 @@ def submit(request):
     meeting = get_zoom_meeting(meeting_id)
     convert_m4a_to_flac()
     record = recognize_speech()
+    delete_tmp_file()
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
 
@@ -49,14 +51,20 @@ def generate_jwt_token():
 
 
 def convert_m4a_to_flac():
-    voice = AudioSegment.from_file("audio/assets/audio_only.m4a", "m4a")
-    voice.export("audio/assets/converted.flac", format="flac")
+    voice = AudioSegment.from_file("audio/tmp/audio_only.m4a", "m4a")
+    voice.export("audio/tmp/converted.flac", format="flac")
 
 
 def recognize_speech():
     r = sr.Recognizer()
-    audio_file = sr.AudioFile('audio/assets/converted.flac')
+    audio_file = sr.AudioFile('audio/tmp/converted.flac')
     with audio_file as source:
         audio = r.record(source)
     record = r.recognize_google(audio, language='ja-JP')
     return record
+
+
+def delete_tmp_file():
+    converted = 'audio/tmp/converted.flac'
+    if os.path.isfile(converted):
+        os.remove(converted)
