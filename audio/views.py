@@ -1,5 +1,7 @@
 from email.mime import audio
 import os
+
+from django.http import HttpResponse
 import jwt
 import time
 import environ
@@ -8,6 +10,7 @@ from django.shortcuts import render
 import http.client
 import speech_recognition as sr
 from pydub import AudioSegment
+from django.core.files.storage import FileSystemStorage
 
 
 def input(request):
@@ -17,9 +20,12 @@ def input(request):
 def submit(request):
     meeting_id = request.POST['meeting_id']
     meeting = get_zoom_meeting(meeting_id)
-    convert_m4a_to_flac()
+    file = request.FILES['file']
+    fs = FileSystemStorage()
+    filename = fs.save("audio/tmp/%s" % file.name, file)
+    convert_m4a_to_flac(filename)
     record = recognize_speech()
-    delete_tmp_file()
+    delete_tmp_files(filename)
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
 
@@ -50,8 +56,8 @@ def generate_jwt_token():
     return token
 
 
-def convert_m4a_to_flac():
-    voice = AudioSegment.from_file("audio/tmp/audio_only.m4a", "m4a")
+def convert_m4a_to_flac(filename):
+    voice = AudioSegment.from_file(filename, "m4a")
     voice.export("audio/tmp/converted.flac", format="flac")
 
 
@@ -64,7 +70,9 @@ def recognize_speech():
     return record
 
 
-def delete_tmp_file():
+def delete_tmp_files(filename):
     converted = 'audio/tmp/converted.flac'
     if os.path.isfile(converted):
         os.remove(converted)
+    if os.path.isfile(filename):
+        os.remove(filename)
