@@ -12,23 +12,21 @@ def input(request):
 
 
 def submit(request):
-    meeting_id = request.POST['meeting_id']
-    get_meeting = {
-        "method": 'GET',
-        "uri": '/v2/meetings/' + meeting_id,
-    }
-    meeting = access_zoom_api(get_meeting)
-
     form = AudioFileForm(request.POST, request.FILES)
     if form.is_valid():
         file_instance = AudioFile(file=request.FILES['file'])
         file_instance.save()
     else:
         return HttpResponse("fail %s" % form.errors['file'])
-
     record = get_record_from_file(file_instance)
-
     delete_uploaded_file_and_instance(file_instance)
+
+    meeting_id = request.POST['meeting_id']
+    get_meeting = {
+        "method": 'GET',
+        "uri": '/v2/meetings/' + meeting_id,
+    }
+    meeting = access_zoom_api(get_meeting)
 
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
