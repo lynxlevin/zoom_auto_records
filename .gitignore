@@ -1,3 +1,5 @@
 __pycache__/
 db.sqlite3
 .env
+audio/assets/converted.flac
+audio/assets/audio_only.m4a

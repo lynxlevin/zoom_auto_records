@@ -6,6 +6,7 @@ import json
 from django.shortcuts import render
 import http.client
 import speech_recognition as sr
+from pydub import AudioSegment
 
 
 def input(request):
@@ -15,6 +16,7 @@ def input(request):
 def submit(request):
     meeting_id = request.POST['meeting_id']
     meeting = get_zoom_meeting(meeting_id)
+    convert_m4a_to_flac()
     record = recognize_speech()
     return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
@@ -48,8 +50,15 @@ def generate_jwt_token():
 
 def recognize_speech():
     r = sr.Recognizer()
-    audio_file = sr.AudioFile('audio/assets/audio_files_harvard.wav')
+    audio_file = sr.AudioFile('audio/assets/converted.flac')
     with audio_file as source:
         audio = r.record(source)
     record = r.recognize_google(audio)
     return record
+
+
+def convert_m4a_to_flac():
+    # voice = AudioSegment.from_file(
+    #     "audio/assets/audio_files_harvard.wav", "wav")
+    voice = AudioSegment.from_file("audio/assets/audio_only.m4a", "m4a")
+    voice.export("audio/assets/converted.flac", format="flac")
