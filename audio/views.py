@@ -1,10 +1,11 @@
+from email.mime import audio
 import jwt
 import time
 import environ
 import json
-from django.http import HttpResponse
 from django.shortcuts import render
 import http.client
+import speech_recognition as sr
 
 
 def input(request):
@@ -14,7 +15,8 @@ def input(request):
 def submit(request):
     meeting_id = request.POST['meeting_id']
     meeting = get_zoom_meeting(meeting_id)
-    return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda']})
+    record = recognize_speech()
+    return render(request, 'audio/submit.html', {'uuid': meeting['uuid'], 'topic': meeting['topic'], 'agenda': meeting['agenda'], 'record': record})
 
 
 def get_zoom_meeting(meeting_id):
@@ -42,3 +44,12 @@ def generate_jwt_token():
 
     token = jwt.encode(payload, API_SECRET, algorithm='HS256')
     return token
+
+
+def recognize_speech():
+    r = sr.Recognizer()
+    audio_file = sr.AudioFile('audio/assets/audio_files_harvard.wav')
+    with audio_file as source:
+        audio = r.record(source)
+    record = r.recognize_google(audio)
+    return record
