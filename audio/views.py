@@ -7,8 +7,20 @@ from audio.models import AudioFile
 from audio.domain_logic import recognize_speech, convert_m4a_to_flac, access_zoom_api
 
 
+def index(request):
+    return render(request, 'audio/index.html')
+
+
 def input(request):
-    return render(request, 'audio/input.html')
+    meeting_id = request.POST['meeting_id'].replace(' ', '')
+
+    list_past_meeting_instances = {
+        'method': 'GET',
+        'uri': '/v2/past_meetings/' + meeting_id + '/instances'
+    }
+    past_meetings = access_zoom_api(list_past_meeting_instances)
+
+    return render(request, 'audio/input.html', {'past_meetings': past_meetings['meetings']})
 
 
 def submit(request):
@@ -23,8 +35,8 @@ def submit(request):
 
     meeting_id = request.POST['meeting_id']
     get_meeting = {
-        "method": 'GET',
-        "uri": '/v2/meetings/' + meeting_id,
+        'method': 'GET',
+        'uri': '/v2/meetings/' + meeting_id,
     }
     meeting = access_zoom_api(get_meeting)
 

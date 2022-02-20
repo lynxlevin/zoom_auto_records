@@ -8,26 +8,13 @@
         <script src=""></script>
     </head>
     <body>
-        <form action="{% url 'audio:submit' %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'audio:input' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label>
                 Zoom会議のミーティングID
                 <input type="text" name="meeting_id">
             </label>
-            <label>
-                Zoomの音声録音(m4a形式)
-                <input type="file" name="file">
-            </label>
             <input type="submit" value="send">
         </form>
-        {% if past_meetings %}
-        <ul>
-            {% for meeting in past_meetings %}
-            <li>
-                {{ meeting }}
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
     </body>
 </html>
