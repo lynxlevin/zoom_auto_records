@@ -3,3 +3,4 @@ db.zoom_auto_records_sqlite3
 .env
 media/*
 audio/tmp/*
+zoom_test.py

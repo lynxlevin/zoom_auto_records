@@ -16,11 +16,23 @@
                 topic: {{ topic }}
             </li>
             <li>
-                agenda: {{ agenda }}
+                start_time: {{ start_time }}
             </li>
             <li>
-                {{ record }}
+                end_time: {{ end_time }}
+            </li>
+            <li>
+                total_minutes: {{ total_minutes }}
+            </li>
+            <li>
+                participants_count: {{ participants_count }}
+            </li>
+            <li>
+                議事録：
             </li>
         </ul>
+        <div>
+            {{ record }}
+        </div>
     </body>
 </html>
