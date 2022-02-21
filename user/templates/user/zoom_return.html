@@ -1,7 +1,9 @@
 {% extends 'audio/base.html' %}
 {% block content %}
 <div>
-    お帰りなさい
-    code: {{ code }}
+    <p>
+        Zoomと連携ができました。
+    </p>
+    <a href="{% url 'audio:index' %}">議事録作成ページへ</a>
 </div>
 {% endblock %}

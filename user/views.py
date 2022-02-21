@@ -1,11 +1,16 @@
-from audioop import reverse
+import base64
+import datetime
+import json
+from django.http import HttpResponse
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 import environ
+import http
 
 from user.forms import SignUpForm
 
@@ -47,13 +52,38 @@ def zoom_return(request):
         code = request.GET.get('code')
     else:
         code = "couldn't get code"
+        return HttpResponse(code)
 
     user = request.user
     user.zoom_code = code
     user.save()
 
-    # zoomへ通信、access_tokenを取得
-    # codeを削除、access_tokenを保存
-    # お帰りなさいページを表示して、audioへのリンクを出す
-    # ログインしていないユーザーの場合、zoom/initに入れないようにする？
-    return render(request, 'user/zoom_return.html', {'code': code})
+    data = get_zoom_access_token(code)
+    user.zoom_access_token = data['access_token']
+    user.zoom_refresh_token = data['refresh_token']
+    now = timezone.now()
+    user.zoom_expires_in = now + datetime.timedelta(seconds=data['expires_in'])
+    user.save()
+    return render(request, 'user/zoom_return.html')
+
+
+def get_zoom_access_token(code):
+    env = environ.Env()
+    env.read_env('.env')
+    client_id = env('ZOOM_CLIENT_ID')
+    client_secret = env('ZOOM_CLIENT_SECRET')
+    basic_auth = base64.b64encode(
+        (client_id + ":" + client_secret).encode('utf-8'))
+    headers = {'authorization': 'Basic' + basic_auth.decode('utf-8')}
+
+    grant_type_query = 'grant_type=authorization_code'
+    code_query = 'code=' + code
+    redirect_uri_query = "redirect_uri=http://localhost:8000/user/zoom/auth/return"
+    uri = '/oauth/token' + '?' + grant_type_query + \
+        '&' + code_query + '&' + redirect_uri_query
+
+    conn = http.client.HTTPSConnection('zoom.us')
+    conn.request('POST', uri, headers=headers)
+    response = conn.getresponse()
+    data = response.read()
+    return json.loads(data)

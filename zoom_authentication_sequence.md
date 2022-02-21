@@ -18,7 +18,8 @@ sequenceDiagram
         Note over s, z: authorization_header[base64 of client_id, client_secret]
         z->>s: access_token
         s->>s: save access_token into users table
-        s->>s: delete code from users table
+        s->>s: save refresh_token into users table
+        s->>s: save expires_in into users table
     else 「拒否」を押下
     end
 ```
