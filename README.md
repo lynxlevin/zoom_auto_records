@@ -60,7 +60,7 @@
 
 
 
-＊Zoom API連携に関しては、ログイン状態に応じて以下のように行います。
+ ※Zoom API連携に関しては、ログイン状態に応じて以下のように行います。
 - `ログイン状態`かつ`Access Token取得済み`：
   - Access Tokenを利用したOAuthによりAPI連携
 - `未ログイン状態`または`Access Token未取得`：
