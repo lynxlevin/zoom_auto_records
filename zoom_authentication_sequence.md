@@ -9,7 +9,7 @@ sequenceDiagram
     Note over c, z: query_params[response_type=code, client_id, redirect_uri]
     z->>c: Zoom認証ページ
     alt 「認可」を押下
-        z->>c: 307: redirect to redirect_uri
+        z->>c: redirect to redirect_uri(/zoom_auth/return)
         c->>s: GET redirect_uri
         Note over c, s: query_params[code]
         s->>s: save code into users table
