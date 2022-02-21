@@ -21,20 +21,6 @@ def convert_m4a_to_flac(file_path, converted_file_path):
     voice.export(converted_file_path, format="flac")
 
 
-def access_zoom_api(user, api):
-    user_has_access_token = (user.zoom_access_token != '') & (
-        user.zoom_expires_in is not None)
-    if user_has_access_token:
-        access_token_available = True
-        if access_token_available:
-            access_token = user.zoom_access_token
-            past_meetings = access_zoom_api_with_access_token(
-                api, access_token)
-    else:
-        past_meetings = access_zoom_api_with_jwt(api)
-    return past_meetings
-
-
 def access_zoom_api_with_access_token(api, token):
     conn = http.client.HTTPSConnection('api.zoom.us')
 

@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from audio.forms import AudioFileForm
 from audio.models import AudioFile
-from audio.domain_logic import access_zoom_api, access_zoom_api_with_access_token, recognize_speech, convert_m4a_to_flac, access_zoom_api_with_jwt
+from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, recognize_speech, convert_m4a_to_flac
 
 
 def index(request):
@@ -56,6 +56,19 @@ def submit(request):
     }
 
     return render(request, 'audio/submit.html', context)
+
+
+def access_zoom_api(user, api):
+    access_token_available = True
+    no_access_token = (user.is_anonymous) or (
+        user.zoom_access_token == '') or not (access_token_available)
+    if no_access_token:
+        past_meetings = access_zoom_api_with_jwt(api)
+    else:
+        access_token = user.zoom_access_token
+        past_meetings = access_zoom_api_with_access_token(
+            api, access_token)
+    return past_meetings
 
 
 def get_record_from_file(file_instance):
