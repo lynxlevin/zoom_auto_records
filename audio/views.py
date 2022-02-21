@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from audio.forms import AudioFileForm
 from audio.models import AudioFile
-from audio.domain_logic import recognize_speech, convert_m4a_to_flac, access_zoom_api
+from audio.domain_logic import access_zoom_api, access_zoom_api_with_access_token, recognize_speech, convert_m4a_to_flac, access_zoom_api_with_jwt
 
 
 def index(request):
@@ -13,12 +13,13 @@ def index(request):
 
 def input(request):
     meeting_id = request.POST['meeting_id'].replace(' ', '')
+    user = request.user
 
     list_past_meeting_instances = {
         'method': 'GET',
-        'uri': '/v2/past_meetings/' + meeting_id + '/instances'
+        'uri': '/v2/past_meetings/' + meeting_id + '/instances',
     }
-    past_meetings = access_zoom_api(list_past_meeting_instances)
+    past_meetings = access_zoom_api(user, list_past_meeting_instances)
 
     return render(request, 'audio/input.html', {'past_meetings': past_meetings['meetings']})
 
@@ -27,11 +28,13 @@ def submit(request):
     if not 'meeting_uuid' in request.POST:
         return HttpResponse("fail choose a meeting")
     meeting_uuid = request.POST['meeting_uuid']
+    user = request.user
+
     get_past_meeting_details = {
         'method': 'GET',
         'uri': '/v2/past_meetings/' + meeting_uuid,
     }
-    meeting = access_zoom_api(get_past_meeting_details)
+    meeting = access_zoom_api(user, get_past_meeting_details)
 
     form = AudioFileForm(request.POST, request.FILES)
     if form.is_valid():
