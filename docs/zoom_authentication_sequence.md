@@ -10,7 +10,7 @@ sequenceDiagram
     z->>c: Zoom認証ページ
     alt 「認可」を押下
         z->>c: redirect to redirect_uri(/user/auth/zoom/return)
-        c->>s: GET redirect_uri
+        c->>s: GET /user/auth/zoom/return
         Note over c, s: query_params[code]
         s->>s: save code into users table
         s->>z: POST https://zoom.us/oauth/token
