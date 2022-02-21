@@ -1,0 +1,16 @@
+{% extends 'audio/base.html' %}
+{% block content %}
+<div>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            {{ field.label }}
+            {{ field }}
+            {{ field.errors }}
+            <br>
+        {% endfor %}
+        <input type="submit" value="sign up">
+    </form>
+</div>
+{% endblock %}
