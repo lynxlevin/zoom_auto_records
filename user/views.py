@@ -9,7 +9,7 @@ from django.views.generic import CreateView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-import environ
+from audio.domain_logic import get_secret
 import http
 
 from user.forms import SignUpForm
@@ -33,12 +33,9 @@ class SignUpView(CreateView):
 
 @login_required
 def zoom_init(request):
-    env = environ.Env()
-    env.read_env('.env')
-
     uri = "https://zoom.us/oauth/authorize"
     response_type_query = "response_type=code"
-    client_id_query = "client_id=" + env('ZOOM_CLIENT_ID')
+    client_id_query = "client_id=" + get_secret('.env', 'ZOOM_CLIENT_ID')
     redirect_uri_query = "redirect_uri=http://localhost:8000/user/zoom/auth/return"
 
     zoom_auth_url = uri + "?" + response_type_query + \
@@ -68,10 +65,8 @@ def zoom_return(request):
 
 
 def get_zoom_access_token(code):
-    env = environ.Env()
-    env.read_env('.env')
-    client_id = env('ZOOM_CLIENT_ID')
-    client_secret = env('ZOOM_CLIENT_SECRET')
+    client_id = get_secret('.env', 'ZOOM_CLIENT_ID')
+    client_secret = get_secret('.env', 'ZOOM_CLIENT_SECRET')
     basic_auth = base64.b64encode(
         (client_id + ":" + client_secret).encode('utf-8'))
     headers = {'authorization': 'Basic' + basic_auth.decode('utf-8')}
