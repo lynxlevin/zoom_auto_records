@@ -48,8 +48,8 @@ def access_zoom_api_with_jwt(api):
 
 
 def generate_jwt_token():
-    API_KEY = get_secret('.env', 'ZOOM_API_KEY')  # get_secret is tested
-    API_SECRET = get_secret('.env', 'ZOOM_API_SECRET')  # get_secret is tested
+    API_KEY = get_secret('ZOOM_API_KEY')  # get_secret is tested
+    API_SECRET = get_secret('ZOOM_API_SECRET')  # get_secret is tested
 
     expiration = int(time.time()) + 5
     payload = {'iss': API_KEY, 'exp': expiration}
@@ -58,7 +58,7 @@ def generate_jwt_token():
     return token
 
 
-def get_secret(env_file, key):  # tested
+def get_secret(key):  # tested
     env = environ.Env()
-    env.read_env(env_file)
+    env.read_env('.env')
     return env(key)
