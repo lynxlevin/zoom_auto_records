@@ -19,7 +19,7 @@
   - 音声ファイルの変換（m4a → flac）のため
 - [SpeechRecognition](https://pypi.org/project/SpeechRecognition/)
   - 音声認識し、文字起こしをするため
-- [environ](https://pypi.org/project/environ/)
+- [django-environ](https://pypi.org/project/python-environ/)
   - 環境変数でClient Secretなどの機密情報を扱うため
 
 ## アプリ作成の目的
@@ -43,7 +43,7 @@
    2. pydub
    3. ffmpeg
    4. SpeechRecognition
-   5. environ
+   5. django-environ
 3. `python3 manage.py migrate`コマンドを入力し、マイグレーションを行う
 4. Zoomのデベロッパーアカウントに登録し、JWTとOAuthのアプリの登録を行う
 5. プロジェクトディレクトリに`.env`ファイルを作成し、以下の内容を記述する
