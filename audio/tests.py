@@ -1,5 +1,6 @@
 import os
 import time
+import environ
 from unittest.mock import MagicMock
 from django.test import TestCase
 from audio.domain_logic import generate_jwt_token, get_secret
@@ -28,14 +29,18 @@ class ExternalLibraryTests(TestCase):
 
 
 class DomainLogicTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        env = environ.Env()
+        env.read_env('.env.test')
+        super().setUpClass()
+
     def test_get_secret(self):
-        get_secret = MagicMock(return_value='test_secret')
         result = get_secret('ZOOM_API_KEY')
-        expected = 'test_secret'
+        expected = 'test_zoom_api_key'
         self.assertEqual(result, expected)
 
     def test_generate_jwt_token(self):
-        # somehow unable to magic_mock get_secret in generate_jwt_token
         API_KEY = get_secret('ZOOM_API_KEY')
         API_SECRET = get_secret('ZOOM_API_SECRET')
         time.time = MagicMock(return_value=100)
