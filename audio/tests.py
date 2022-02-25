@@ -1,11 +1,9 @@
-import http
-import json
 import os
 import time
 import environ
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 from django.test import TestCase
-from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret
+from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret, recognize_speech
 
 from audio.views import delete_file
 import jwt
@@ -109,3 +107,17 @@ class DomainLogicTests(TestCase):
         self.assertEqual(result, expected)
         mock_connection.assert_called_once_with(headers, api)
         mock_read.assert_called_once()
+
+    @patch('speech_recognition.Recognizer.return_value.recognize_google', return_value='test')
+    @patch('speech_recognition.Recognizer.return_value.record', return_value='audio')
+    @patch('speech_recognition.AudioFile')
+    @patch('speech_recognition.Recognizer')
+    def test_recognize_speech(self, mock_sr, mock_audio, mock_record, mock_recognize):
+        file_path = '/test_file'
+        language = 'ja-JP'
+        result = recognize_speech(file_path, language)
+        self.assertEqual(result, 'test')
+        mock_sr.assert_called_once()
+        mock_audio.assert_called_once_with(file_path)
+        mock_record.assert_called_once()
+        mock_recognize.assert_called_once_with('audio', language=language)
