@@ -4,7 +4,7 @@ import time
 import environ
 from unittest.mock import MagicMock, Mock, patch
 from django.test import TestCase
-from audio.domain_logic import access_zoom_api_with_jwt, generate_jwt_token, get_http_response, get_secret
+from audio.domain_logic import access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret
 
 from audio.views import delete_file
 import jwt
@@ -61,7 +61,7 @@ class DomainLogicTests(TestCase):
     #         'method': 'GET',
     #         'uri': '/test/',
     #     }
-    #     response = get_http_response(headers, api)  # モックが使われていない
+    #     response = getresponse_httpsconnection(headers, api)  # モックが使われていない
     #     self.assertEqual(response, 'test')
 
     # def mocked_request(*args, **kwargs):

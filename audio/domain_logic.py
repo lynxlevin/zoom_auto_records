@@ -26,7 +26,7 @@ def access_zoom_api_with_access_token(api, token):
         'authorization': 'Bearer' + token
     }
 
-    response = get_http_response(headers, api)
+    response = getresponse_httpsconnection(headers, api)
     data = response.read()
     return json.loads(data)
 
@@ -38,7 +38,7 @@ def access_zoom_api_with_jwt(api):
         'content-type': 'application/json'
     }
 
-    response = get_http_response(headers, api)
+    response = getresponse_httpsconnection(headers, api)
     data = response.read()
     return json.loads(data)
 
