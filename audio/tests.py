@@ -5,7 +5,7 @@ import time
 import environ
 from unittest.mock import MagicMock, Mock, patch
 from django.test import TestCase
-from audio.domain_logic import access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret
+from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret
 
 from audio.views import delete_file
 import jwt
@@ -88,5 +88,24 @@ class DomainLogicTests(TestCase):
 
         self.assertEqual(result, expected)
         mock_jwt.assert_called_once()
+        mock_connection.assert_called_once_with(headers, api)
+        mock_read.assert_called_once()
+
+    @patch('audio.domain_logic.getresponse_httpsconnection.return_value.read', return_value='{"test": "success"}')
+    @patch('audio.domain_logic.getresponse_httpsconnection')
+    def test_access_zoom_api_with_access_token(self, mock_connection, mock_read):
+        api = {
+            'method': 'GET',
+            'uri': '/test'
+        }
+        token = 'token'
+        headers = {
+            'authorization': 'Bearer' + token,
+        }
+
+        result = access_zoom_api_with_access_token(api, token)
+        expected = {"test": "success"}
+
+        self.assertEqual(result, expected)
         mock_connection.assert_called_once_with(headers, api)
         mock_read.assert_called_once()
