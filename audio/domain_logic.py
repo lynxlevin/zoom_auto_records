@@ -51,17 +51,17 @@ def getresponse_httpsconnection(headers, api):
 
 
 def generate_jwt_token():
-    API_KEY = get_secret('ZOOM_API_KEY')  # get_secret is tested
-    API_SECRET = get_secret('ZOOM_API_SECRET')  # get_secret is tested
+    API_KEY = get_secret('ZOOM_API_KEY')
+    API_SECRET = get_secret('ZOOM_API_SECRET')
 
     expiration = int(time.time()) + 5
     payload = {'iss': API_KEY, 'exp': expiration}
 
-    token = jwt.encode(payload, API_SECRET, algorithm='HS256')  # jwt is tested
+    token = jwt.encode(payload, API_SECRET, algorithm='HS256')
     return token
 
 
-def get_secret(key):  # tested
+def get_secret(key):
     env = environ.Env()
     env.read_env('.env')
     return env(key)

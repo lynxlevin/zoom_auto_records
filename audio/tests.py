@@ -1,4 +1,5 @@
 import http
+import json
 import os
 import time
 import environ
@@ -69,37 +70,23 @@ class DomainLogicTests(TestCase):
         mock_request.assert_called_once_with(
             api['method'], api['uri'], headers=headers)
 
-    # def mocked_request(*args, **kwargs):
-    #     class MockRequest:
-    #         def __init__(self):
-    #             pass
+    @patch('audio.domain_logic.getresponse_httpsconnection.return_value.read', return_value='{"test": "success"}')
+    @patch('audio.domain_logic.getresponse_httpsconnection')
+    @patch('audio.domain_logic.generate_jwt_token', return_value='token')
+    def test_access_zoom_api_with_jwt(self, mock_jwt, mock_connection, mock_read):
+        api = {
+            'method': 'GET',
+            'uri': '/test'
+        }
+        headers = {
+            'authorization': 'Bearertoken',
+            'content-type': 'application/json'
+        }
 
-    #         def request(self, method, uri, headers):
-    #             self.response = 'test_response'
+        result = access_zoom_api_with_jwt(api)
+        expected = {"test": "success"}
 
-    #         def getresponse(self):
-    #             return self.response
-
-    #     class MockResponse
-
-    # @patch('audio.domain_logic.generate_jwt_token', return_value='test')
-    # def test_access_zoom_api_with_jwt(self, jwt_token_patch):
-    #     stub_token = 'test'
-
-    #     # conn = '?'
-
-    #     # stub_headers = {
-    #     #     'authorization': 'Bearer' + stub_token,
-    #     #     'content-type': 'application/json'
-    #     # }
-    #     stub_api = {
-    #         'method': 'GET',
-    #         'uri': '/test'
-    #     }
-
-    #     # # conn.request(stub_api['method'], stub_api['uri'], headers=stub_headers)
-    #     # # response = conn.getresponse()
-    #     # # expected_data = json.loads(response.read())
-    #     # result = access_zoom_api_with_jwt(stub_api)
-    #     self.assertEqual(access_zoom_api_with_jwt(stub_api), stub_token)
-    #     jwt_token_patch.assert_called_once()
+        self.assertEqual(result, expected)
+        mock_jwt.assert_called_once()
+        mock_connection.assert_called_once_with(headers, api)
+        mock_read.assert_called_once()
