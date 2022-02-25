@@ -52,7 +52,7 @@ class DomainLogicTests(TestCase):
 
     @patch('http.client.HTTPSConnection.request')
     @patch('http.client.HTTPSConnection.getresponse', return_value='test')
-    def test_getresponse_httpsconnection(self, mock_connection, mock_request):
+    def test_getresponse_httpsconnection(self, mock_getresponse, mock_request):
         headers = {
             'authorization': 'Bearer' + 'token',
             'content-type': 'application/json'
@@ -62,11 +62,10 @@ class DomainLogicTests(TestCase):
             'uri': '/test/',
         }
 
-        conn = http.client.HTTPSConnection('api.zoom.us')
-        conn.request(api['method'], api['uri'], headers=headers)
-        response = conn.getresponse()
+        response = getresponse_httpsconnection(headers, api)
+
         self.assertEqual(response, 'test')
-        mock_connection.assert_called_once()
+        mock_getresponse.assert_called_once()
         mock_request.assert_called_once_with(
             api['method'], api['uri'], headers=headers)
 
