@@ -50,19 +50,25 @@ class DomainLogicTests(TestCase):
             {'iss': API_KEY, 'exp': 105}, API_SECRET, algorithm='HS256')
         self.assertEqual(result, expected)
 
-    # def test_get_http_response(self):
-    #     mock_connection = Mock(spec=http.client.HTTPSConnection)
-    #     mock_connection.getresponse.return_value = 'test'
-    #     headers = {
-    #         'authorization': 'Bearer' + 'token',
-    #         'content-type': 'application/json'
-    #     }
-    #     api = {
-    #         'method': 'GET',
-    #         'uri': '/test/',
-    #     }
-    #     response = getresponse_httpsconnection(headers, api)  # モックが使われていない
-    #     self.assertEqual(response, 'test')
+    @patch('http.client.HTTPSConnection.request')
+    @patch('http.client.HTTPSConnection.getresponse', return_value='test')
+    def test_getresponse_httpsconnection(self, mock_connection, mock_request):
+        headers = {
+            'authorization': 'Bearer' + 'token',
+            'content-type': 'application/json'
+        }
+        api = {
+            'method': 'GET',
+            'uri': '/test/',
+        }
+
+        conn = http.client.HTTPSConnection('api.zoom.us')
+        conn.request(api['method'], api['uri'], headers=headers)
+        response = conn.getresponse()
+        self.assertEqual(response, 'test')
+        mock_connection.assert_called_once()
+        mock_request.assert_called_once_with(
+            api['method'], api['uri'], headers=headers)
 
     # def mocked_request(*args, **kwargs):
     #     class MockRequest:
