@@ -22,29 +22,32 @@ def convert_m4a_to_flac(file_path, converted_file_path):
 
 
 def access_zoom_api_with_access_token(api, token):
-    conn = http.client.HTTPSConnection('api.zoom.us')
-
     headers = {
         'authorization': 'Bearer' + token
     }
-    conn.request(api['method'], api['uri'], headers=headers)
-    response = conn.getresponse()
+
+    response = get_http_response(headers, api)
     data = response.read()
     return json.loads(data)
 
 
 def access_zoom_api_with_jwt(api):
     token = generate_jwt_token()
-    conn = http.client.HTTPSConnection('api.zoom.us')
-
     headers = {
         'authorization': 'Bearer' + token,
         'content-type': 'application/json'
     }
-    conn.request(api['method'], api['uri'], headers=headers)
-    response = conn.getresponse()
+
+    response = get_http_response(headers, api)
     data = response.read()
     return json.loads(data)
+
+
+def getresponse_httpsconnection(headers, api):
+    conn = http.client.HTTPSConnection('api.zoom.us')
+    conn.request(api['method'], api['uri'], headers=headers)
+    response = conn.getresponse()
+    return response
 
 
 def generate_jwt_token():
