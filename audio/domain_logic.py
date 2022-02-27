@@ -16,6 +16,7 @@ def recognize_speech(file_path, language):
     return record
 
 
+# TODO: test this method
 def convert_m4a_to_flac(file_path, converted_file_path):
     voice = AudioSegment.from_file(file_path, "m4a")
     voice.export(converted_file_path, format="flac")
