@@ -1,14 +1,20 @@
 import os
 import time
+from audio.models import AudioFile
 import environ
 from unittest.mock import MagicMock, patch
 from django.test import TestCase
 from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret, recognize_speech
-
-from audio.views import delete_file
+import audio
+from audio.views import delete_file, delete_file_and_instance
 import jwt
 
-# Create your tests here.
+
+def create_audio_file_record():
+    file = AudioFile()
+    file.file = 'testfile'
+    file.save()
+    return file
 
 
 class AudioViewsMethodsTests(TestCase):
@@ -18,6 +24,18 @@ class AudioViewsMethodsTests(TestCase):
             pass
         delete_file(fake_path)
         self.assertFalse(os.path.isfile(fake_path))
+
+    def test_delete_file_and_instance(self):
+        audio.views.delete_file = MagicMock()
+        file = create_audio_file_record()
+        current_path = os.getcwd()
+        audio_file_count = AudioFile.objects.count()
+
+        delete_file_and_instance(file)
+
+        audio.views.delete_file.assert_called_once_with(
+            current_path + '/media/testfile')
+        self.assertEqual(AudioFile.objects.count(), audio_file_count - 1)
 
 
 class ExternalLibraryTests(TestCase):

@@ -43,7 +43,7 @@ def submit(request):
     else:
         return HttpResponse("fail %s" % form.errors['file'])
     record = get_record_from_file(file_instance)
-    delete_uploaded_file_and_instance(file_instance)
+    delete_file_and_instance(file_instance)
 
     context = {
         'uuid': meeting['uuid'],
@@ -90,7 +90,7 @@ def delete_file(file_path):
         os.remove(file_path)
 
 
-def delete_uploaded_file_and_instance(file_instance):
+def delete_file_and_instance(file_instance):
     path = file_instance.file.path
     delete_file(path)
     file_instance.delete()
