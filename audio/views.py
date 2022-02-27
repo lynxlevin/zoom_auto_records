@@ -59,12 +59,11 @@ def submit(request):
 
 
 def access_zoom_api(user, api):
-    if not user.is_authenticated:
+    if user.is_anonymous:
         past_meetings = access_zoom_api_with_jwt(api)
         return past_meetings
 
-    has_valid_token = user.has_valid_token()
-    if has_valid_token:
+    if user.has_valid_token():
         access_token = user.zoom_access_token
         past_meetings = access_zoom_api_with_access_token(
             api, access_token)
