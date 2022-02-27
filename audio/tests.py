@@ -1,5 +1,7 @@
 import os
 import time
+
+from django.urls import reverse
 from audio.models import AudioFile
 import environ
 from unittest.mock import MagicMock, patch
@@ -24,6 +26,13 @@ def get_stub_api():
         'method': 'GET',
         'uri': '/test/',
     }
+
+
+class AudioViewsPagesTests(TestCase):
+    def test_index(self):
+        response = self.client.get(reverse('audio:index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Zoom会議のミーティングID")
 
 
 class AudioViewsMethodsTests(TestCase):
