@@ -5,8 +5,8 @@ import environ
 from unittest.mock import MagicMock, patch
 from django.test import TestCase
 from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret, recognize_speech
-import audio
-from audio.views import delete_file, delete_file_and_instance
+import audio.views as views
+from audio.views import delete_file, delete_file_and_instance, get_record_from_file
 import jwt
 
 
@@ -26,16 +26,33 @@ class AudioViewsMethodsTests(TestCase):
         self.assertFalse(os.path.isfile(fake_path))
 
     def test_delete_file_and_instance(self):
-        audio.views.delete_file = MagicMock()
+        views.delete_file = MagicMock()
         file = create_audio_file_record()
         current_path = os.getcwd()
         audio_file_count = AudioFile.objects.count()
 
         delete_file_and_instance(file)
 
-        audio.views.delete_file.assert_called_once_with(
+        views.delete_file.assert_called_once_with(
             current_path + '/media/testfile')
         self.assertEqual(AudioFile.objects.count(), audio_file_count - 1)
+
+    def test_get_record_from_file(self):
+        views.convert_m4a_to_flac = MagicMock()
+        views.recognize_speech = MagicMock()
+        views.delete_file = MagicMock()
+        current_path = os.getcwd()
+        file_path = current_path + '/media/testfile'
+        converted_file_path = 'audio/tmp/converted.flac'
+
+        file_instance = create_audio_file_record()
+        get_record_from_file(file_instance)
+
+        views.convert_m4a_to_flac.assert_called_once_with(
+            file_path, converted_file_path)
+        views.recognize_speech.assert_called_once_with(
+            converted_file_path, 'ja-JP')
+        views.delete_file.assert_called_once_with(converted_file_path)
 
 
 class ExternalLibraryTests(TestCase):
