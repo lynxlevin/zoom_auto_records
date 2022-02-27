@@ -6,8 +6,10 @@ from unittest.mock import MagicMock, patch
 from django.test import TestCase
 from audio.domain_logic import access_zoom_api_with_access_token, access_zoom_api_with_jwt, generate_jwt_token, getresponse_httpsconnection, get_secret, recognize_speech
 import audio.views as views
-from audio.views import delete_file, delete_file_and_instance, get_record_from_file
+from audio.views import access_zoom_api, delete_file, delete_file_and_instance, get_record_from_file
 import jwt
+from user.tests import create_user_with_access_token, create_user_without_access_token
+from django.contrib.auth.models import AnonymousUser
 
 
 def create_audio_file_record():
@@ -15,6 +17,13 @@ def create_audio_file_record():
     file.file = 'testfile'
     file.save()
     return file
+
+
+def get_stub_api():
+    return {
+        'method': 'GET',
+        'uri': '/test/',
+    }
 
 
 class AudioViewsMethodsTests(TestCase):
@@ -54,6 +63,40 @@ class AudioViewsMethodsTests(TestCase):
             converted_file_path, 'ja-JP')
         views.delete_file.assert_called_once_with(converted_file_path)
 
+    def test_access_zoom_api_with_access_token(self):
+        views.access_zoom_api_with_access_token = MagicMock()
+        views.access_zoom_api_with_jwt = MagicMock()
+        user = create_user_with_access_token(1)
+        api = get_stub_api()
+
+        access_zoom_api(user, api)
+
+        views.access_zoom_api_with_access_token.assert_called_once_with(
+            api, 'testtoken')
+        views.access_zoom_api_with_jwt.assert_not_called()
+
+    def test_access_zoom_api_without_access_token(self):
+        views.access_zoom_api_with_access_token = MagicMock()
+        views.access_zoom_api_with_jwt = MagicMock()
+        user = create_user_without_access_token()
+        api = get_stub_api()
+
+        access_zoom_api(user, api)
+
+        views.access_zoom_api_with_access_token.assert_not_called()
+        views.access_zoom_api_with_jwt.assert_called_once_with(api)
+
+    def test_access_zoom_api_with_anonymous_user(self):
+        views.access_zoom_api_with_access_token = MagicMock()
+        views.access_zoom_api_with_jwt = MagicMock()
+        user = AnonymousUser()
+        api = get_stub_api()
+
+        access_zoom_api(user, api)
+
+        views.access_zoom_api_with_access_token.assert_not_called()
+        views.access_zoom_api_with_jwt.assert_called_once_with(api)
+
 
 class ExternalLibraryTests(TestCase):
     def test_jwt(self):
@@ -91,10 +134,7 @@ class DomainLogicTests(TestCase):
             'authorization': 'Bearer' + 'token',
             'content-type': 'application/json'
         }
-        api = {
-            'method': 'GET',
-            'uri': '/test/',
-        }
+        api = get_stub_api()
 
         response = getresponse_httpsconnection(headers, api)
 
@@ -107,10 +147,7 @@ class DomainLogicTests(TestCase):
     @patch('audio.domain_logic.getresponse_httpsconnection')
     @patch('audio.domain_logic.generate_jwt_token', return_value='token')
     def test_access_zoom_api_with_jwt(self, mock_jwt, mock_connection, mock_read):
-        api = {
-            'method': 'GET',
-            'uri': '/test'
-        }
+        api = get_stub_api()
         headers = {
             'authorization': 'Bearertoken',
             'content-type': 'application/json'
@@ -127,10 +164,7 @@ class DomainLogicTests(TestCase):
     @patch('audio.domain_logic.getresponse_httpsconnection.return_value.read', return_value='{"test": "success"}')
     @patch('audio.domain_logic.getresponse_httpsconnection')
     def test_access_zoom_api_with_access_token(self, mock_connection, mock_read):
-        api = {
-            'method': 'GET',
-            'uri': '/test'
-        }
+        api = get_stub_api()
         token = 'token'
         headers = {
             'authorization': 'Bearer' + token,
