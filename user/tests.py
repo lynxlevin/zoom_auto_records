@@ -8,7 +8,8 @@ from django.utils import timezone
 
 def create_user_with_access_token(timedelta_hour):
     user = CustomUser()
-    user.username = 'test_user'
+    user_count = CustomUser.objects.count()
+    user.username = 'test_user' + str(user_count)
     user.email = 'test@test'
     user.zoom_access_token = 'testtoken'
     user.zoom_expires_in = timezone.now() + datetime.timedelta(hours=timedelta_hour)
@@ -18,7 +19,8 @@ def create_user_with_access_token(timedelta_hour):
 
 def create_user_without_access_token():
     user = CustomUser()
-    user.username = 'test_user'
+    user_count = CustomUser.objects.count()
+    user.username = 'test_user' + str(user_count)
     user.email = 'test@test'
     user.save()
     return user
