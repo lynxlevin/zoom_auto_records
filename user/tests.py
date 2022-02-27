@@ -7,7 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 # Create your tests here.
 
 
-def get_user_with_access_token(timedelta_hour):
+def create_user_with_access_token(timedelta_hour):
     user = CustomUser()
     user.username = 'test_user'
     user.email = 'test@test'
@@ -17,7 +17,7 @@ def get_user_with_access_token(timedelta_hour):
     return user
 
 
-def get_user_without_access_token():
+def create_user_without_access_token():
     user = CustomUser()
     user.username = 'test_user'
     user.email = 'test@test'
@@ -28,16 +28,16 @@ def get_user_without_access_token():
 class CustomUserTests(TestCase):
 
     def test_has_valid_token_valid(self):
-        user = get_user_with_access_token(1)
+        user = create_user_with_access_token(1)
         result = user.has_valid_token()
         self.assertTrue(result)
 
     def test_has_valid_token_expired(self):
-        user = get_user_with_access_token(-1)
+        user = create_user_with_access_token(-1)
         result = user.has_valid_token()
         self.assertFalse(result)
 
     def test_has_valid_token_empty(self):
-        user = get_user_without_access_token()
+        user = create_user_without_access_token()
         result = user.has_valid_token()
         self.assertFalse(result)
