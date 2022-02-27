@@ -1,3 +1,4 @@
+from ast import AnnAssign
 import os
 import time
 
@@ -33,6 +34,24 @@ class AudioViewsPagesTests(TestCase):
         response = self.client.get(reverse('audio:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Zoom会議のミーティングID")
+
+    def test_input(self):
+        views.access_zoom_api = MagicMock()
+        user = create_user_with_access_token(1)
+        self.client.force_login(user)
+        meeting_id = '12345'
+        api = {
+            'method': 'GET',
+            'uri': '/v2/past_meetings/' + meeting_id + '/instances',
+        }
+
+        response = self.client.post(reverse('audio:input'), {
+                                    'meeting_id': meeting_id})
+
+        views.access_zoom_api.assert_called_once_with(
+            user, api)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'どのZoom会議？')
 
 
 class AudioViewsMethodsTests(TestCase):
@@ -140,7 +159,7 @@ class DomainLogicTests(TestCase):
     @patch('http.client.HTTPSConnection.getresponse', return_value='test')
     def test_getresponse_httpsconnection(self, mock_getresponse, mock_request):
         headers = {
-            'authorization': 'Bearer' + 'token',
+            'authorization': 'Bearertoken',
             'content-type': 'application/json'
         }
         api = get_stub_api()
