@@ -10,6 +10,7 @@ class AudioFileForm(forms.ModelForm):
         validators=[FileSizeValidator(val=200, byte_type="mb")],
         required=True,
     )
+    meeting_uuid = forms.CharField(required=True)
 
     class Meta:
         model = AudioFile

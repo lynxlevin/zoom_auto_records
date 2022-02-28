@@ -25,9 +25,14 @@ def input(request):
 
 
 def submit(request):
-    if not 'meeting_uuid' in request.POST:
-        return HttpResponse("fail choose a meeting")
-    meeting_uuid = request.POST['meeting_uuid']
+    form = AudioFileForm(request.POST, request.FILES)
+    if form.is_valid():
+        file_instance = AudioFile(file=request.FILES['file'])
+        file_instance.save()
+        meeting_uuid = request.POST['meeting_uuid']
+    else:
+        return HttpResponse("fail %s" % form.errors)
+
     user = request.user
 
     get_past_meeting_details = {
@@ -36,12 +41,6 @@ def submit(request):
     }
     meeting = access_zoom_api(user, get_past_meeting_details)
 
-    form = AudioFileForm(request.POST, request.FILES)
-    if form.is_valid():
-        file_instance = AudioFile(file=request.FILES['file'])
-        file_instance.save()
-    else:
-        return HttpResponse("fail %s" % form.errors['file'])
     record = get_record_from_file(file_instance)
     delete_file_and_instance(file_instance)
 
