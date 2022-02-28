@@ -13,6 +13,7 @@ from audio.views import access_zoom_api, delete_file, delete_file_and_instance, 
 import jwt
 from user.tests import create_user_with_access_token, create_user_without_access_token
 from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 def create_audio_file_record():
@@ -40,18 +41,40 @@ class AudioViewsPagesTests(TestCase):
         user = create_user_with_access_token(1)
         self.client.force_login(user)
         meeting_id = '12345'
-        api = {
-            'method': 'GET',
-            'uri': '/v2/past_meetings/' + meeting_id + '/instances',
-        }
 
         response = self.client.post(reverse('audio:input'), {
                                     'meeting_id': meeting_id})
 
+        api = {
+            'method': 'GET',
+            'uri': '/v2/past_meetings/' + meeting_id + '/instances',
+        }
         views.access_zoom_api.assert_called_once_with(
             user, api)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'どのZoom会議？')
+
+    def test_submit(self):
+        views.access_zoom_api = MagicMock()
+        views.get_record_from_file = MagicMock()
+        views.delete_file_and_instance = MagicMock()
+
+        user = create_user_with_access_token(1)
+        self.client.force_login(user)
+
+        meeting_uuid = 'test_uuid'
+        file = SimpleUploadedFile('test_file.txt', b'this is a test file')
+
+        response = self.client.post(reverse('audio:submit'), {
+                                    'meeting_uuid': meeting_uuid, 'file': file})
+
+        api = {
+            'method': 'GET',
+            'uri': '/v2/past_meetings/' + meeting_uuid,
+        }
+        views.access_zoom_api.assert_called_once_with(user, api)
+        views.get_record_from_file.assert_called_once()
+        views.delete_file_and_instance.assert_called_once()
 
 
 class AudioViewsMethodsTests(TestCase):
