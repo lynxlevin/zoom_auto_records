@@ -26,13 +26,12 @@ def input(request):
 
 def submit(request):
     form = AudioFileForm(request.POST, request.FILES)  # not tested
-    if form.is_valid():
-        file_instance = AudioFile(file=request.FILES['file'])
-        file_instance.save()
-        meeting_uuid = request.POST['meeting_uuid']
-    else:
+    if not form.is_valid():
         return HttpResponse("fail %s" % form.errors)
 
+    file_instance = AudioFile(file=request.FILES['file'])
+    file_instance.save()
+    meeting_uuid = request.POST['meeting_uuid']
     user = request.user
 
     get_past_meeting_details = {
