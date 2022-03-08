@@ -80,8 +80,8 @@ class AudioViewsPagesTests(TestCase):
 class AudioViewsMethodsTests(TestCase):
     def test_delete_file(self):
         fake_path = 'audio/fake_file.txt'
-        with open(fake_path, 'w'):
-            pass
+        open(fake_path, 'w')
+        self.assertTrue(os.path.isfile(fake_path))
         delete_file(fake_path)
         self.assertFalse(os.path.isfile(fake_path))
 
